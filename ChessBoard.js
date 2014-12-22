@@ -1,15 +1,5 @@
 var Chess;
 (function (Chess) {
-    (function (Piece) {
-        Piece[Piece["Empty"] = 0] = "Empty";
-        Piece[Piece["King"] = 1] = "King";
-        Piece[Piece["Queen"] = 2] = "Queen";
-        Piece[Piece["Bishop"] = 3] = "Bishop";
-        Piece[Piece["Knight"] = 4] = "Knight";
-        Piece[Piece["Rook"] = 5] = "Rook";
-        Piece[Piece["Pawn"] = 6] = "Pawn";
-    })(Chess.Piece || (Chess.Piece = {}));
-    var Piece = Chess.Piece;
     var Board = (function () {
         function Board() {
             this.rows = 8;

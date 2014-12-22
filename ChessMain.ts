@@ -3,6 +3,7 @@
 /// <reference path="../DefinitelyTyped/threejs/three-trackballcontrols.d.ts" />
 /// <reference path="../DefinitelyTyped/dat-gui/dat-gui.d.ts" />
 
+/// <reference path="ChessPiece.ts" />
 /// <reference path="ChessBoard.ts" />
 
 (function() {
@@ -10,6 +11,8 @@
     var scene : THREE.Scene;
     var camera : THREE.PerspectiveCamera;
     var meshes : THREE.Mesh[] = [];
+    var pieces : Chess.Piece[] = [];
+
     var edge : THREE.Mesh;
     var renderer : THREE.WebGLRenderer;
 
@@ -51,7 +54,7 @@
         container.appendChild(renderer.domElement);
 
         // Add trackball control
-        controls = new THREE.TrackballControls(camera, renderer.domElement);
+        // controls = new THREE.TrackballControls(camera, renderer.domElement);
 
         var ambientLight = new THREE.AmbientLight(0x333333);
         scene.add(ambientLight);
@@ -103,8 +106,46 @@
         plane.receiveShadow = true;
         scene.add(plane);
 
-
+        document.addEventListener("mousedown", onMouseDown, false);
         document.addEventListener("resize", onWindowResize, false);
+    }
+
+    function onMouseDown(e: MouseEvent) : void {
+        var materials = new Array<THREE.Material>(pieces.length);
+        for(var i=0; i<pieces.length; i++) {
+            materials[i] = pieces[i].mesh.material;
+            var color = 255 << 16 | i << 8;
+            pieces[i].mesh.material = new THREE.MeshBasicMaterial({color: color, fog: false});
+        }
+        renderer.render(scene, camera);
+
+        var gl = renderer.getContext();
+        var pixels = new Uint8Array(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
+        gl.readPixels(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+        var pixelX = e.clientX;
+        var pixelY = SCREEN_HEIGHT - e.clientY - 1;
+        var red   = pixels[(pixelY * SCREEN_WIDTH + pixelX) * 4 + 0];
+        var green = pixels[(pixelY * SCREEN_WIDTH + pixelX) * 4 + 1];
+        var blue  = pixels[(pixelY * SCREEN_WIDTH + pixelX) * 4 + 2];
+        var alpha = pixels[(pixelY * SCREEN_WIDTH + pixelX) * 4 + 3];
+
+        if(red == 255) {
+            console.log("piece " +  green + " selected.");
+            console.log("this piece is " + pieceNames[pieces[green].pieceKind] + " at (" + pieces[green].x + ", " + pieces[green].y + ")" );
+        }
+        for(var i=0; i<pieces.length; i++) {
+            pieces[i].mesh.material = materials[i];
+        }
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() : void {
+        SCREEN_WIDTH = window.innerWidth;
+        SCREEN_HEIGHT = window.innerHeight;
+        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+        camera.updateProjectionMatrix();
     }
 
     function ChessPieceMeshLoader(pieceId : number, px : number, py : number ) : void {
@@ -123,7 +164,7 @@
             pieceMesh.scale.set(0.1, 0.1, 0.1);
             pieceMesh.castShadow = true;
             pieceMesh.receiveShadow = false;
-            meshes.push(pieceMesh);
+            pieces.push(new Chess.Piece(pieceId, px, py, pieceMesh));
             scene.add(pieceMesh);
         });
     }
@@ -139,17 +180,9 @@
         }
     }
 
-    function onWindowResize() : void {
-        SCREEN_WIDTH = window.innerWidth;
-        SCREEN_HEIGHT = window.innerHeight;
-        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-        camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-        camera.updateProjectionMatrix();
-    }
-
     function animate() : void {
         requestAnimationFrame(animate);
-        controls.update();
+        // controls.update();
         renderer.render(scene, camera);
     }
 

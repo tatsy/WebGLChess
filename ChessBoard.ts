@@ -1,18 +1,8 @@
 module Chess {
-    export enum Piece {
-        Empty = 0,
-        King,
-        Queen,
-        Bishop,
-        Knight,
-        Rook,
-        Pawn
-    }
-
     export class Board {
         public rows : number;
         public cols : number;
-        private pieces : Piece[][];
+        private pieces : number[][];
         constructor() {
             this.rows = 8;
             this.cols = 8;
@@ -28,11 +18,11 @@ module Chess {
             ];
         }
 
-        getPiece(row : number, col : number) : Piece {
+        getPiece(row : number, col : number) : number {
             return this.pieces[row][col];
         }
 
-        setPiece(row : number, col : number, piece : Piece) : void {
+        setPiece(row : number, col : number, piece : number) : void {
             this.pieces[row][col] = piece;
         }
     }
